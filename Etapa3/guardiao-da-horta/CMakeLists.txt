@@ -40,6 +40,7 @@ add_executable(guardiao-da-horta
     hal/aht10.c
     hal/bmp280.c
     hal/bh1750.c
+    hal/ssd1306.c
     )
 
 pico_set_program_name(guardiao-da-horta "guardiao-da-horta")
