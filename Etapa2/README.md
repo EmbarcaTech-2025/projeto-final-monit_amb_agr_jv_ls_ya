@@ -118,16 +118,21 @@ sobre o hardware, software e procedimentos de uso.
 
 ## Arquitetura do Sistema
 
-###  Diagrama de hardware 
+###  Esquemático de hardware 
 
 Na Figura abaixo está o esquemático do circuito no EasyEDA enfatizando as conexões dos periféricos ao microcontrolador. Com exceção do Display OLED, todos os outros dispositivos que usam a comunicação I2C, temperatura, umidade e pressão, compartilham do mesmo canal que usam as GPIOs 2 e 3. Os 3 dispositivos que compartilham as portas I2C estarão conectados juntos pelo extensor Keypad. O display OLED terá a comunicação por outro canal I2C nas portas GPIOs 14 e 15. Os botões A,B e Select do joystick usam GPIOs individuais, respectivamente 5,6 e 22. Os eixos analógicos do Joystick são conectados às GPIOs 26 e 27. O módulo microSDCard utiliza os pinos GP19(MOSI), GP18(SCK), GP17(CS) e GP16(MISO).
 
-![Diagrama do Circuito](sheet1.png)
+![Esquemático do Circuito](EsquematicoHardwareMonitoramentoAgricola.png)
 
 ### Blocos funcionais
 
+A Figura abaixo apresenta a organização em blocos funcionais do sistema, evidenciando a integração entre sensores, atuadores, microcontrolador (Bitdoglab), interfaces de comunicação (SPI, I2C e Wi-Fi) e os protocolos de transmissão de dados (MQTT e HTTP).
 
+![Diagrama do Circuito](BlocosFuncionaisMonitoramentoAgricola.png)
 
 ### Fluxograma do software
 
+A Figura abaixo ilustra o fluxo de execução do software embarcado, desde a inicialização dos sensores e a verificação do cartão SD até o envio e exibição dos dados coletados, contemplando também a lógica de interação com o joystick e botões.
+
+![Diagrama do Circuito](FluxogramaSoftwareMonitoramentoAgricola.png)
 
