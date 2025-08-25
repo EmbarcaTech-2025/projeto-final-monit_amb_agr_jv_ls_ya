@@ -114,3 +114,20 @@ sobre o hardware, software e procedimentos de uso.
 | Cartão SD                              | SPI              | Armazenamento de dados históricos        | SCK: GP18, MOSI: GP19, MISO: GP16, CS: GP17 | GPIOs livres com suporte SPI                            |
 | Extensão de conexões para sensores (I2C) | I2C              | Conecta múltiplos sensores I2C           | SDA: GP1, SCL: GP2 ou GP3/GP4        | Facilita integração dos sensores                             |
 
+
+
+## Arquitetura do Sistema
+
+###  Diagrama de hardware 
+
+Na Figura abaixo está o esquemático do circuito no EasyEDA Emfatizando a . Com exceção do Display OLED, todos os outros dispositivos que usam a comunicação I2C, temperatura, umidade e pressão, compartilham do mesmo canal que usam as GPIOs 2 e 3. Os 3 dispositivos que compartilham as portas I2C estarão conectados juntos pelo extensor Keypad. O display OLED terá a comunicação por outro canal I2C nas portas GPIOs 14 e 15. Os botões A,B e Select do joystick usam GPIOs individuais, respectivamente 5,6 e 22. Os eixos analógicos do Joystick são conectados às GPIOs 26 e 27. O módulo microSDCard utiliza os pinos GP19(MOSI), GP18(SCK), GP17(CS) e GP16(MISO)
+
+![Diagrama do Circuito](sheet1.png)
+
+### Blocos funcionais
+
+
+
+### Fluxograma do software
+
+
