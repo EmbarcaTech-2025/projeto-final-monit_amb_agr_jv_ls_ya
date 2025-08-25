@@ -35,7 +35,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(guardiao-da-horta guardiao-da-horta.c )
+add_executable(guardiao-da-horta     
+    app/main.c
+    hal/aht10.c
+    )
 
 pico_set_program_name(guardiao-da-horta "guardiao-da-horta")
 pico_set_program_version(guardiao-da-horta "0.1")
@@ -46,11 +49,15 @@ pico_enable_stdio_usb(guardiao-da-horta 1)
 
 # Add the standard library to the build
 target_link_libraries(guardiao-da-horta
-        pico_stdlib)
+        pico_stdlib
+        hardware_i2c
+        )
 
 # Add the standard include files to the build
 target_include_directories(guardiao-da-horta PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers
+    ${CMAKE_CURRENT_SOURCE_DIR}/hal
 )
 
 # Add any user requested libraries
@@ -59,4 +66,3 @@ target_link_libraries(guardiao-da-horta
         )
 
 pico_add_extra_outputs(guardiao-da-horta)
-
