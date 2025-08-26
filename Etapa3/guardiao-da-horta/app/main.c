@@ -6,6 +6,8 @@
 #include "bh1750.h"
 #include "display.h"
 
+#include "sdcard_manager.h"
+
 #define I2C_PORT_SENSORS i2c0
 const uint I2C_SDA_SENSORS_PIN = 0;
 const uint I2C_SCL_SENSORS_PIN = 1;
@@ -41,6 +43,8 @@ void setup_hardware() {
 
 int main() {
     setup_hardware();
+
+    write_test();//SDcard test Function
 
     while (1) {
         float aht_temp, humidity, bmp_temp, pressure, lux;
