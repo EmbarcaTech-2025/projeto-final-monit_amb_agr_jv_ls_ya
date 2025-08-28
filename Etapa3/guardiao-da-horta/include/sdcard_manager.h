@@ -5,10 +5,17 @@
 
 #include "pico/stdlib.h"
 
-#include "../lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src/include/hw_config.h"
+#include "hw_config.h"
 #include "f_util.h"
 #include "ff.h"
 
-void write_test();
+void list_dir_content(const char *path);
+
+//Escreve o conteúdo de 'data_str' no arquvio 'name_file'(sem .txt no fim) no caminho 'path'
+void sd_write_data(const char *data_str,const char *name_file,const char *path);
+
+//Lê o conteúdo na string de entrada é flexível com o tamanho sendo determinado nos parâmetros de entrada
+void sd_read_data(char *data_str,const uint str_size,const char *name_file,const char *path);
+
 
 #endif
