@@ -33,18 +33,29 @@ project(guardiao-da-horta C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+add_subdirectory(lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build) #nescessário para o SDcard
+
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(guardiao-da-horta     
     app/main.c
-    app/main.c
+    app/hw_config.c 
     hal/aht10.c
     hal/bmp280.c
     hal/bh1750.c
     hal/display.c
     drivers/ssd1306.c
     drivers/font.c
+    
+    include/sdcard_manager.c
+
     )
+
+# Can leave these off for silent mode:
+# add_compile_definitions(USE_PRINTF USE_DBG_PRINTF)
+add_compile_definitions(USE_PRINTF)
+
+
 
 pico_set_program_name(guardiao-da-horta "guardiao-da-horta")
 pico_set_program_version(guardiao-da-horta "0.1")
@@ -57,6 +68,7 @@ pico_enable_stdio_usb(guardiao-da-horta 1)
 target_link_libraries(guardiao-da-horta
         pico_stdlib
         hardware_i2c
+        no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
         )
 
 # Add the standard include files to the build

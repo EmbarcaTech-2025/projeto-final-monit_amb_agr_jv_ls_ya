@@ -42,6 +42,8 @@
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "display.h": "c",
+        "stdbool.h": "c"
     }
 }

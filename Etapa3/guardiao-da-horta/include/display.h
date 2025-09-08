@@ -11,4 +11,6 @@ void display_render_wifi_status(const char* ssid, bool wifi_ok, bool mqtt_ok);
 void display_render_sd_status(bool mounted, uint64_t total_kb, uint64_t used_kb, int last_errno);
 void display_render_timing(uint32_t period_ms, uint64_t uptime_ms, uint32_t last_loop_ms);
 
+float check_size_MKb(char *prefixo,uint64_t data_size);
+
 #endif

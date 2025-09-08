@@ -61,13 +61,20 @@ void display_render_wifi_status(const char* ssid, bool wifi_ok, bool mqtt_ok) {
 }
 
 void display_render_sd_status(bool mounted, uint64_t total_kb, uint64_t used_kb, int last_errno) {
-    char l1[24], l2[24], l3[24], l4[24];
+    char l1[24], l2[24], l3[24], l4[24],prefixo;
+    uint64_t aux_value_print;
+    float mem={0};
 
     clear_and_frame("Cartao SD");
 
+    aux_value_print=total_kb;
+
     snprintf(l1, sizeof(l1), "SD: %s", mounted ? "OK" : "NOK");
-    snprintf(l2, sizeof(l2), "Tot: %llu MB", (unsigned long long)(total_kb/1024ULL));
-    snprintf(l3, sizeof(l3), "Uso: %llu MB", (unsigned long long)(used_kb/1024ULL));
+    mem=check_size_MKb(&prefixo,aux_value_print);
+    snprintf(l2, sizeof(l2), "Tot: %.1f %cB", mem,prefixo);
+    aux_value_print=used_kb;
+    mem=check_size_MKb(&prefixo,aux_value_print);
+    snprintf(l3, sizeof(l3), "Uso: %.1f %cB", mem,prefixo);
     snprintf(l4, sizeof(l4), "Err: %d", last_errno);
 
     ssd1306_draw_string(&disp, 0, 20, 1, l1);
@@ -91,4 +98,20 @@ void display_render_timing(uint32_t timer_read, uint64_t timer_mqtt, uint32_t ti
     ssd1306_draw_string(&disp, 0, 44, 1, l3);
 
     ssd1306_show(&disp);
+}
+
+//recebe valor total de bytes e retorna o float e altera o prefixo char que acompanha B
+float check_size_MKb(char *prefixo,uint64_t data_size){
+    uint64_t aux=data_size;
+    float faux=data_size;
+    if(aux>=(1024*1024)){
+        faux/=(float)(1024*1024);
+        *prefixo='G';
+    }else if(aux>=(1024)){
+        faux/=(float)(1024);
+        *prefixo='M';
+    } else{
+        *prefixo='K';
+    }
+    return faux;
 }
