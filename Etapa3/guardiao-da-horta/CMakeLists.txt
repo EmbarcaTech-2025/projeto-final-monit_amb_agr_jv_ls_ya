@@ -39,6 +39,8 @@ add_subdirectory(lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build) #nescessário p
 
 add_executable(guardiao-da-horta     
     app/main.c
+    app/wifi_conn.c
+    app/mqtt_comm.c
     app/hw_config.c 
     hal/aht10.c
     hal/bmp280.c
@@ -69,6 +71,9 @@ target_link_libraries(guardiao-da-horta
         pico_stdlib
         hardware_i2c
         no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+        pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip_mqtt
+        pico_lwip
         )
 
 # Add the standard include files to the build

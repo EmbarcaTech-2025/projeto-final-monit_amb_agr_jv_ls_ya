@@ -7,6 +7,9 @@
 #include "hardware/i2c.h"
 #include "hardware/gpio.h"
 
+#include "../include/wifi_conn.h"
+#include "../include/mqtt_comm.h"
+
 #include "aht10.h"
 #include "bmp280.h"
 #include "bh1750.h"
@@ -131,7 +134,12 @@ int main(void) {
     // sd_read_data(string_teste,2000,"filename.txt","/");
     // printf("Escrevendo conteúdo lido no arquivo: \n%s\n",string_teste);
 
+    const char *ssid = "CLARO_5G5D1167";
+    const char *password = "385D1167";
+    
+    connect_to_wifi(ssid, password);
 
+    mqtt_setup("bitdog1", "192.168.0.165");
 
     app.menu = MENU_MEASUREMENTS;
     app.time.period_ms = 2000;
@@ -155,10 +163,31 @@ int main(void) {
         if (btn_pressed(&bC)) { }
 
         if (absolute_time_diff_us(get_absolute_time(), tSens) <= 0) {
+            // 1. Lê os dados dos sensores
             read_sensors(&app.sens);
             tSens = delayed_by_ms(tSens, app.time.period_ms);
-        }
 
+            // 2. Prepara os dados para o JSON (lógica similar à do seu display)
+            float temp = app.sens.aht_ok ? app.sens.aht_temp : (app.sens.bmp_ok ? app.sens.bmp_temp : NAN);
+            float hum  = app.sens.aht_ok ? app.sens.humidity : NAN;
+            float pres = app.sens.bmp_ok ? app.sens.pressure : NAN;
+            float lux  = app.sens.lux_ok ? app.sens.lux : NAN;
+
+            // 3. Cria a string JSON
+            char json_payload[256];
+            sprintf(json_payload,
+                    "{\"temperatura\":%.2f, \"umidade\":%.2f, \"pressao\":%.2f, \"luminosidade\":%.1f}",
+                    temp,
+                    hum,
+                    pres / 100.0f, // Converte de Pa para hPa (opcional, mas comum)
+                    lux);
+
+            // 4. Publica a mensagem via MQTT
+            //    Verifica se o Wi-Fi e o MQTT estão conectados antes de enviar
+            if (app.wifi.wifi_connected && app.mqtt.mqtt_connected) {
+                mqtt_comm_publish("bitdoglab/data", (const uint8_t *)json_payload, strlen(json_payload));
+            }
+        }
         static uint32_t slow = 0;
         if ((slow++ % 5) == 0) {
             wifi_query_status(&app.wifi);
