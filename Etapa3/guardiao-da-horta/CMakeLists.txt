@@ -38,18 +38,19 @@ add_subdirectory(lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build) #nescessário p
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(guardiao-da-horta     
-    app/main.c
-    app/wifi_conn.c
-    app/mqtt_comm.c
     app/hw_config.c 
+    app/main.c
+    hal/wifi_conn.c
+    hal/mqtt_comm.c
     hal/aht10.c
     hal/bmp280.c
     hal/bh1750.c
     hal/display.c
+    hal/sdcard_manager.c
+    hal/mqtt_manager.c
     drivers/ssd1306.c
     drivers/font.c
-    
-    include/sdcard_manager.c
+
 
     )
 

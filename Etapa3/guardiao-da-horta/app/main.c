@@ -7,8 +7,7 @@
 #include "hardware/i2c.h"
 #include "hardware/gpio.h"
 
-#include "../include/wifi_conn.h"
-#include "../include/mqtt_comm.h"
+#include "mqtt_manager.h"
 
 #include "aht10.h"
 #include "bmp280.h"
@@ -110,10 +109,25 @@ static void mqtt_query_status(MqttStatus* ms) {
 }
 
 static void sd_query_status(SdStatus* sd) {
-    sd->mounted = false;
-    sd->total_kb = 4096ULL * 1024ULL;
-    sd->used_kb  =  512ULL * 1024ULL;
+    // sd->mounted = false;
+    // sd->total_kb = 4096ULL * 1024ULL;
+    // sd->used_kb  =  512ULL * 1024ULL;
     sd->last_errno = 0;
+
+    bool auxmounted=false;
+    uint64_t memtotal={0};
+    uint64_t memfree={0};
+    char prefixo;
+    float mem={0};
+    sd_card_space(&sd->mounted,&sd->total_kb,&memfree);
+    sd->used_kb=(sd->total_kb - memfree);
+
+    // printf("SDconected: %d | Mem total: %llu | Mem Livre %llu | Mem Usada %llu\n",sd->mounted,sd->total_kb,memfree,sd->used_kb);
+    // mem=check_size_MKb(&prefixo,sd->total_kb);
+    // printf("Tot: %.1f %cB\n", mem,prefixo);
+    // mem=check_size_MKb(&prefixo,sd->used_kb);
+    // printf("Tot: %.1f %cB\n", mem,prefixo);
+
 }
 
 static void read_sensors(SensorData* s) {
@@ -125,24 +139,14 @@ static void read_sensors(SensorData* s) {
 static void setup_hardware();
 
 
-
-
 int main(void) {
     setup_hardware();
 
-    // char string_teste[2000]={};
-    // sd_read_data(string_teste,2000,"filename.txt","/");
-    // printf("Escrevendo conteúdo lido no arquivo: \n%s\n",string_teste);
 
-    const char *ssid = "CLARO_5G5D1167";
-    const char *password = "385D1167";
-    
-    connect_to_wifi(ssid, password);
-
-    mqtt_setup("bitdog1", "192.168.0.165");
+    mqtt_conect_init();
 
     app.menu = MENU_MEASUREMENTS;
-    app.time.period_ms = 2000;
+    app.time.period_ms = 3000;
     app.time.started_at = get_absolute_time();
 
     DebBtn bA, bB, bC;
@@ -153,7 +157,6 @@ int main(void) {
     absolute_time_t tSens = make_timeout_time_ms(app.time.period_ms);
     absolute_time_t tUI   = make_timeout_time_ms(200);
 
-    sd_query_status(&app.sd);
 
     while (true) {
         absolute_time_t t0 = get_absolute_time();
@@ -167,32 +170,15 @@ int main(void) {
             read_sensors(&app.sens);
             tSens = delayed_by_ms(tSens, app.time.period_ms);
 
-            // 2. Prepara os dados para o JSON (lógica similar à do seu display)
-            float temp = app.sens.aht_ok ? app.sens.aht_temp : (app.sens.bmp_ok ? app.sens.bmp_temp : NAN);
-            float hum  = app.sens.aht_ok ? app.sens.humidity : NAN;
-            float pres = app.sens.bmp_ok ? app.sens.pressure : NAN;
-            float lux  = app.sens.lux_ok ? app.sens.lux : NAN;
+            // 2. publica informações
+            mqtt_get_and_publish(app.wifi.wifi_connected,app.mqtt.mqtt_connected,app.sens.aht_ok,app.sens.bmp_ok,app.sens.lux_ok,app.sens.aht_temp,app.sens.bmp_temp,app.sens.humidity,app.sens.pressure,app.sens.lux);
 
-            // 3. Cria a string JSON
-            char json_payload[256];
-            sprintf(json_payload,
-                    "{\"temperatura\":%.2f, \"umidade\":%.2f, \"pressao\":%.2f, \"luminosidade\":%.1f}",
-                    temp,
-                    hum,
-                    pres / 100.0f, // Converte de Pa para hPa (opcional, mas comum)
-                    lux);
-
-            // 4. Publica a mensagem via MQTT
-            //    Verifica se o Wi-Fi e o MQTT estão conectados antes de enviar
-            if (app.wifi.wifi_connected && app.mqtt.mqtt_connected) {
-                mqtt_comm_publish("bitdoglab/data", (const uint8_t *)json_payload, strlen(json_payload));
-            }
         }
         static uint32_t slow = 0;
         if ((slow++ % 5) == 0) {
             wifi_query_status(&app.wifi);
             mqtt_query_status(&app.mqtt);
-            // sd_query_status(&app.sd);
+            sd_query_status(&app.sd);
         }
 
         if (absolute_time_diff_us(get_absolute_time(), tUI) <= 0) {
@@ -208,28 +194,6 @@ int main(void) {
                     display_render_wifi_status(app.wifi.ssid, app.wifi.wifi_connected, app.mqtt.mqtt_connected);
                     break;
                 case MENU_SD:
-                    // app.sd.mounted = sd_card_check();
-                    // printf("Sd conected: %d\n",app.sd.mounted);
-
-                    bool auxmounted=false;
-                    uint64_t memtotal={0};
-                    uint64_t memfree={0};
-                    char prefixo;
-                    float mem={0};
-                    sd_card_space(&app.sd.mounted,&app.sd.total_kb,&memfree);
-                    // printf("Mem total: %d | Mem Livre %d | Mem usada %d\n",memtotal,memfree,(memtotal-memfree));
-                    // sd_card_force_print_info(&auxmounted,&memtotal,&memfree);
-                    app.sd.used_kb=(app.sd.total_kb - memfree);
-                    printf("SDconected: %d | Mem total: %llu | Mem Livre %llu | Mem Usada %llu\n",app.sd.mounted,app.sd.total_kb,memfree,app.sd.used_kb);
-                    
-
-                    mem=check_size_MKb(&prefixo,app.sd.total_kb);
-                    printf("Tot: %.1f %cB\n", mem,prefixo);
-                    mem=check_size_MKb(&prefixo,app.sd.used_kb);
-                    printf("Tot: %.1f %cB\n", mem,prefixo);
-                    // sd_card_force_print_info();
-                    
-
                     display_render_sd_status(app.sd.mounted, app.sd.total_kb, app.sd.used_kb, app.sd.last_errno);
                     break;
                 case MENU_TIMING: {

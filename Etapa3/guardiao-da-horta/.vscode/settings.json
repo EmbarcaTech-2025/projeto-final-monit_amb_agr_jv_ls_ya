@@ -44,6 +44,9 @@
         "string_view": "cpp",
         "span": "cpp",
         "display.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "stdlib.h": "c",
+        "mqtt_comm.h": "c",
+        "math.h": "c"
     }
 }
