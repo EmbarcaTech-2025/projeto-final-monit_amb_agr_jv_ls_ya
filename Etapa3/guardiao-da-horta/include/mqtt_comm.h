@@ -12,7 +12,7 @@
  * @param user Username for authentication (can be NULL)
  * @param pass Password for authentication (can be NULL)
  */
-void mqtt_setup(const char *client_id, const char *broker_ip);
+void mqtt_setup(const char *client_id, const char *broker_ip, bool *status_mqtt);
 
 /**
  * @brief Publishes data to an MQTT topic

@@ -17,13 +17,13 @@
 #include "sdcard_manager.h"
 
 #define I2C_PORT_SENSORS i2c0
-static const uint I2C_SDA_SENSORS_PIN = 0;
-static const uint I2C_SCL_SENSORS_PIN = 1;
+#define I2C_SDA_SENSORS_PIN  0
+#define I2C_SCL_SENSORS_PIN  1
 
 #define I2C_PORT_DISPLAY i2c1
-static const uint I2C_SDA_DISPLAY_PIN = 14;
-static const uint I2C_SCL_DISPLAY_PIN = 15;
-static const uint8_t I2C_OLED_ADDR = 0x3C;
+#define I2C_SDA_DISPLAY_PIN  14
+#define I2C_SCL_DISPLAY_PIN  15
+#define I2C_OLED_ADDR  0x3C
 
 
 #define BTN_A_PIN 5
@@ -99,19 +99,18 @@ static inline bool btn_pressed(DebBtn* b) {
 }
 
 static void wifi_query_status(WifiStatus* ws) {
-    strncpy(ws->ssid, "MinhaRede2G", sizeof(ws->ssid));
+    strncpy(ws->ssid, SSID, sizeof(ws->ssid));
     ws->ssid[sizeof(ws->ssid)-1] = '\0';
-    ws->wifi_connected = true;
+    ws->wifi_connected = wifi_check();
+    // printf("SSid: %s, Status: %d\n",ws->ssid,ws->wifi_connected);
 }
 
 static void mqtt_query_status(MqttStatus* ms) {
-    ms->mqtt_connected = true;
+    ms->mqtt_connected = mqtt_check();
 }
 
 static void sd_query_status(SdStatus* sd) {
-    // sd->mounted = false;
-    // sd->total_kb = 4096ULL * 1024ULL;
-    // sd->used_kb  =  512ULL * 1024ULL;
+
     sd->last_errno = 0;
 
     bool auxmounted=false;
@@ -142,7 +141,6 @@ static void setup_hardware();
 int main(void) {
     setup_hardware();
 
-
     mqtt_conect_init();
 
     app.menu = MENU_MEASUREMENTS;
@@ -170,9 +168,30 @@ int main(void) {
             read_sensors(&app.sens);
             tSens = delayed_by_ms(tSens, app.time.period_ms);
 
-            // 2. publica informações
-            mqtt_get_and_publish(app.wifi.wifi_connected,app.mqtt.mqtt_connected,app.sens.aht_ok,app.sens.bmp_ok,app.sens.lux_ok,app.sens.aht_temp,app.sens.bmp_temp,app.sens.humidity,app.sens.pressure,app.sens.lux);
+            // 2. Prepara os dados para o JSON (lógica similar à do seu display)
+            float temp = app.sens.aht_ok ? app.sens.aht_temp : (app.sens.bmp_ok ? app.sens.bmp_temp : NAN);
+            float hum  = app.sens.aht_ok ? app.sens.humidity : NAN;
+            float pres = app.sens.bmp_ok ? app.sens.pressure : NAN;
+            float lux  = app.sens.lux_ok ? app.sens.lux : NAN;
 
+            // 3. Cria a string JSON
+            char json_payload[256];
+            sprintf(json_payload,
+                    "{\"temperatura\":%.2f, \"umidade\":%.2f, \"pressao\":%.2f, \"luminosidade\":%.1f}",
+                    temp,
+                    hum,
+                    pres / 100.0f, // Converte de Pa para hPa (opcional, mas comum)
+                    lux);
+
+            // 4. Escreve a string com as informações no SDcard
+            sd_write_data(json_payload,"data_geted","/");
+
+            // 5. publica informações no tópico MQTT
+            mqtt_get_and_publish2(app.wifi.wifi_connected,app.mqtt.mqtt_connected,json_payload);
+
+            // printf("Wifi: %d | Mqtt: %d \n",wifi_check(),mqtt_check());
+            // // 5. publica informações
+            // mqtt_get_and_publish(app.wifi.wifi_connected,app.mqtt.mqtt_connected,app.sens.aht_ok,app.sens.bmp_ok,app.sens.lux_ok,app.sens.aht_temp,app.sens.bmp_temp,app.sens.humidity,app.sens.pressure,app.sens.lux);
         }
         static uint32_t slow = 0;
         if ((slow++ % 5) == 0) {

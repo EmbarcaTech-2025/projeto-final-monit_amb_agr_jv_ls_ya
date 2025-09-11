@@ -6,6 +6,7 @@
 /* Variável global estática para armazenar a instância do cliente MQTT
 * 'static' limita o escopo deste arquivo */
 static mqtt_client_t *client;
+extern bool conct_status_mqtt;
 /* Callback de conexão MQTT - chamado quando o status da conexão muda
 * Parâmetros:
 * - client: instância do cliente MQTT
@@ -14,8 +15,10 @@ static mqtt_client_t *client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
     if (status == MQTT_CONNECT_ACCEPTED) {
         printf("Conectado ao broker MQTT com sucesso!\n");
+        conct_status_mqtt=true;
     } else {
     printf("Falha ao conectar ao broker, código: %d\n", status);
+    conct_status_mqtt=false;
     }
 }
 /* Função para configurar e iniciar a conexão MQTT
@@ -24,7 +27,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 * - broker_ip: endereço IP do broker como string (ex: "192.168.1.1")
 * - user: nome de usuário para autenticação (pode ser NULL)
 * - pass: senha para autenticação (pode ser NULL) */
-void mqtt_setup(const char *client_id, const char *broker_ip) {
+void mqtt_setup(const char *client_id, const char *broker_ip, bool *status_mqtt) {
     ip_addr_t broker_addr; // Estrutura para armazenar o IP do broker
     // Converte o IP de string para formato numérico
     if (!ip4addr_aton(broker_ip, &broker_addr)) {
@@ -49,7 +52,12 @@ void mqtt_setup(const char *client_id, const char *broker_ip) {
     // - mqtt_connection_cb: callback de status
     // - NULL: argumento opcional para o callback
     // - &ci: informações de conexão
-    mqtt_client_connect(client, &broker_addr, 1883, mqtt_connection_cb, NULL, &ci);
+    int8_t err = mqtt_client_connect(client, &broker_addr, 1883, mqtt_connection_cb, NULL, &ci);
+    if(err == ERR_OK){
+        *status_mqtt = true;
+    } else {
+        *status_mqtt = false;
+    }
 }
 /* Callback de confirmação de publicação
 * Chamado quando o broker confirma recebimento da mensagem (para QoS > 0)

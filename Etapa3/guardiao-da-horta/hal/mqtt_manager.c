@@ -1,6 +1,7 @@
 #include "mqtt_manager.h"
 
-
+volatile bool conct_status_mqtt=false;
+// char nome_rede_ssid[64]={};
 
 
 void mqtt_conect_init(){
@@ -8,9 +9,10 @@ void mqtt_conect_init(){
     // const char *password = "385D1167";
     
     connect_to_wifi(SSID, PASSWD);
+    // sprintf(nome_rede_ssid,SSID);
 
-    // mqtt_setup("bitdog1", "192.168.1.76");
-    mqtt_setup("bitdog1", "192.168.0.165");
+    mqtt_setup("bitdog1", "192.168.1.76",&conct_status_mqtt);
+    // mqtt_setup("bitdog1", "192.168.0.165");
 }
 
 void mqtt_get_and_publish(bool wifi_connected,bool mqtt_connected, bool aht_ok,bool bmp_ok,bool lux_ok,
@@ -35,4 +37,28 @@ void mqtt_get_and_publish(bool wifi_connected,bool mqtt_connected, bool aht_ok,b
     if (wifi_connected && mqtt_connected) {
         mqtt_comm_publish("bitdoglab/data", (const uint8_t *)json_payload, strlen(json_payload));
     }
+}
+
+void mqtt_get_and_publish2(bool wifi_connected,bool mqtt_connected,char *str){
+
+    // 3. Cria a string JSON
+    char json_payload[256];
+
+    // 4. Publica a mensagem via MQTT
+    //    Verifica se o Wi-Fi e o MQTT estão conectados antes de enviar
+    if (wifi_connected && mqtt_connected) {
+        mqtt_comm_publish("bitdoglab/data", (const uint8_t *)str, strlen(str));
+    }
+}
+
+bool wifi_check(){
+    // Verifica o status da conexão WiFi
+    int8_t status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+    
+    // Retorna true se estiver conectado
+    return (status == CYW43_LINK_JOIN || status == CYW43_LINK_UP);
+}
+
+bool mqtt_check(){
+    return conct_status_mqtt;
 }
