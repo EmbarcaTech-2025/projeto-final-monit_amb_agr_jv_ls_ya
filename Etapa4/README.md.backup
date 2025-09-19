@@ -160,7 +160,7 @@ Após os preparos o código deve ser compilado e embarcado na raspberry pi pico 
 
 Assim que é ligado, o sistema configura os pinos dos sensores I2C, do Display OLED e então tenta estabelecer a conexão com o Wifi e com o Broker do MQTT. Essa etapa de conexão wireless pode levar até 30 segundos. Em seguida ele termina de configurar os botões e então liga a interface do OLED mostrando os status de cada módulo.
 
-De início o OLED exibe as informações dos sensores a cada segundo. Apertando os botões A e B ele alterna entre outras exibições sendo A retornando e B avançando. Na exibição é seguido a seguinte ordem que é cíclica:
+De início o OLED exibe as informações dos sensores a cada segundo. Apertando os botões A e B ele alterna entre outras exibições sendo A retornando e B avançando. Na exibição é seguido a seguinte ordem:
 
 1) **Medidas dos Sensores**: exibem as informações e valores que os sensores captam
 2) **Status Wifi e MQTT**: exibe status de conexão do Wifi e com o broker MQTT.
