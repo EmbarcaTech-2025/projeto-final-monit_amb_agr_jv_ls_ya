@@ -128,6 +128,10 @@ Na Figura abaixo está o esquemático do circuito no EasyEDA enfatizando as cone
 
 A Figura abaixo apresenta a organização em blocos funcionais do sistema, evidenciando a integração entre sensores, atuadores, microcontrolador (Bitdoglab), interfaces de comunicação (SPI, I2C e Wi-Fi) e os protocolos de transmissão de dados (MQTT e HTTP).
 
+Em laranja estão todos os periféricos de entrada, que fornecem informações da telemetria e permitem a interação com o usuário, conectados ao microcontrolador.
+
+Os blocos verdes são dispositivos atuadores que servem para armazenar ou exibir as informações captadas pelos sensores e os status de funcionamento de cada periférico. O Broker MQTT recebe as publicações no tópico onde são enviadas os valores dos sensores e podem ser observadas por uma interface de monitoramento. 
+
 ![Diagrama do Circuito](BlocosFuncionaisMonitoramentoAgricola.png)
 
 ### Fluxograma do software
@@ -160,9 +164,11 @@ Após os preparos o código deve ser compilado e embarcado na raspberry pi pico 
 
 Assim que é ligado, o sistema configura os pinos dos sensores I2C, do Display OLED e então tenta estabelecer a conexão com o Wifi e com o Broker do MQTT. Essa etapa de conexão wireless pode levar até 30 segundos. Em seguida ele termina de configurar os botões e então liga a interface do OLED mostrando os status de cada módulo.
 
-De início o OLED exibe as informações dos sensores a cada segundo. Apertando os botões A e B ele alterna entre outras exibições sendo A retornando e B avançando. Na exibição é seguido a seguinte ordem:
+De início o OLED exibe as informações dos sensores a cada segundo. Apertando os botões A e B ele alterna entre outras exibições sendo A retornando e B avançando. Na exibição é seguido a seguinte ordem que é cíclica:
 
 1) **Medidas dos Sensores**: exibem as informações e valores que os sensores captam
 2) **Status Wifi e MQTT**: exibe status de conexão do Wifi e com o broker MQTT.
 3) **Status do SDcard**: exibe se há algum SDcard reconhecido e mostra o tamanho da memória dele e o quanto de espaço está ocupado.
 4) **Status de tempo**: Exibe as configurações de tempo para a atualização do Display OLED e o tempo de escrita do SDcard com envio para o MQTT.
+
+A escrita dos dados e publicação no tópico do MQTT são feitas no intervalo de tempo definido na variável app.time.period_ms. Sendo que a escrita dos dados são feitas antes da publicação 

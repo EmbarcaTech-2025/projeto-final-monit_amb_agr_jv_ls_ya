@@ -128,6 +128,10 @@ Na Figura abaixo está o esquemático do circuito no EasyEDA enfatizando as cone
 
 A Figura abaixo apresenta a organização em blocos funcionais do sistema, evidenciando a integração entre sensores, atuadores, microcontrolador (Bitdoglab), interfaces de comunicação (SPI, I2C e Wi-Fi) e os protocolos de transmissão de dados (MQTT e HTTP).
 
+Em laranja estão todos os periféricos de entrada, que fornecem informações da telemetria e permitem a interação com o usuário, conectados ao microcontrolador.
+
+Os blocos verdes são dispositivos atuadores que servem para armazenar ou exibir as informações captadas pelos sensores e os status de funcionamento de cada periférico. O Broker MQTT recebe as publicações no tópico onde são enviadas os valores dos sensores e podem ser observadas por uma interface de monitoramento. 
+
 ![Diagrama do Circuito](BlocosFuncionaisMonitoramentoAgricola.png)
 
 ### Fluxograma do software
@@ -166,3 +170,5 @@ De início o OLED exibe as informações dos sensores a cada segundo. Apertando 
 2) **Status Wifi e MQTT**: exibe status de conexão do Wifi e com o broker MQTT.
 3) **Status do SDcard**: exibe se há algum SDcard reconhecido e mostra o tamanho da memória dele e o quanto de espaço está ocupado.
 4) **Status de tempo**: Exibe as configurações de tempo para a atualização do Display OLED e o tempo de escrita do SDcard com envio para o MQTT.
+
+A escrita dos dados e publicação no tópico do MQTT são feitas no intervalo de tempo definido na variável app.time.period_ms. Sendo que a escrita dos dados são feitas antes da publicação no tópico MQTT garantindo o armazenamento das informações antes da publicação wireless que é mais sujeita a problemas por condições adversas.
